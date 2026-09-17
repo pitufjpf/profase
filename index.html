@@ -703,7 +703,7 @@
 
     document.getElementById("sheetBody").innerHTML = html;
     if(f._custom){
-      document.getElementById("deleteFichaBtn").addEventListener("click", function(){ deleteCustomFicha(f.id); });
+      document.getElementById("deleteFichaBtn").addEventListener("click", function(){ deleteCustomFicha(f); });
     }
     overlay.hidden = false;
     document.getElementById("sheet").scrollTop = 0;
@@ -721,18 +721,96 @@
     document.getElementById("navToggle").setAttribute("aria-expanded","false");
   }
 
-  var CUSTOM_KEY = "fichas-custom-v1";
+  var SUPABASE_URL = "https://ymydcssbiltgspmencpe.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteWRjc3NiaWx0Z3NwbWVuY3BlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2MTMwNzAsImV4cCI6MjEwNTE4OTA3MH0.nocJQDoX4UZhQFsJYW2AyV4RfG6sSZUt5EJ_kBPLzeA";
+  var CUSTOM_ID_OFFSET = 1000000;
   var pendingPhoto = null;
+  var pendingPhotoFile = null;
 
-  function loadCustom(){
-    try{
-      var raw = localStorage.getItem(CUSTOM_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){ return []; }
+  function sbHeaders(extra){
+    var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY };
+    if(extra) for(var k in extra) h[k] = extra[k];
+    return h;
   }
-  function saveCustom(list){
-    try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); }catch(e){}
+
+  function dbRowToFicha(row){
+    return {
+      id: CUSTOM_ID_OFFSET + row.id,
+      nombre: row.nombre,
+      section: row.section,
+      sectionNum: row.section_num,
+      color: row.color,
+      codigos_sidico: row.codigos_sidico || [],
+      snomed_code: row.snomed_code,
+      snomed_fsn: row.snomed_fsn,
+      snomed_es: row.snomed_es,
+      snomed_nota: row.snomed_nota,
+      clase_riesgo: row.clase_riesgo,
+      clase_fuente: row.clase_fuente,
+      descripcion: row.descripcion || [],
+      medidas: row.medidas || [],
+      usos: row.usos || [],
+      tipo_material: row.tipo_material || [],
+      generalidades: row.generalidades || [],
+      presentacion: row.presentacion || [],
+      almacenamiento: row.almacenamiento || [],
+      imagen: row.imagen_url || null,
+      imagen_fuente: row.imagen_fuente || "",
+      _custom: true,
+      _dbId: row.id
+    };
   }
+
+  function fetchProductosFromDb(){
+    return fetch(SUPABASE_URL + "/rest/v1/productos?select=*&order=created_at.asc", {
+      headers: sbHeaders()
+    }).then(function(r){
+      if(!r.ok) throw new Error("Supabase respondió " + r.status);
+      return r.json();
+    }).then(function(rows){
+      return rows.map(dbRowToFicha);
+    }).catch(function(err){
+      console.error("No se pudieron cargar los productos compartidos:", err);
+      return [];
+    });
+  }
+
+  function sanitizeFilename(name){
+    return String(name || "foto").toLowerCase().replace(/[^a-z0-9.]+/g, "-");
+  }
+
+  function uploadFoto(file){
+    var path = Date.now() + "-" + Math.random().toString(36).slice(2) + "-" + sanitizeFilename(file.name);
+    return fetch(SUPABASE_URL + "/storage/v1/object/productos-fotos/" + encodeURIComponent(path), {
+      method: "POST",
+      headers: sbHeaders({ "Content-Type": file.type || "application/octet-stream" }),
+      body: file
+    }).then(function(r){
+      if(!r.ok) return r.text().then(function(t){ throw new Error("No se pudo subir la foto (" + r.status + "): " + t); });
+      return SUPABASE_URL + "/storage/v1/object/public/productos-fotos/" + encodeURIComponent(path);
+    });
+  }
+
+  function insertProducto(row){
+    return fetch(SUPABASE_URL + "/rest/v1/productos", {
+      method: "POST",
+      headers: sbHeaders({ "Content-Type": "application/json", "Prefer": "return=representation" }),
+      body: JSON.stringify([row])
+    }).then(function(r){
+      if(!r.ok) return r.text().then(function(t){ throw new Error("No se pudo guardar el producto (" + r.status + "): " + t); });
+      return r.json();
+    }).then(function(rows){ return rows[0]; });
+  }
+
+  function deleteProducto(dbId){
+    return fetch(SUPABASE_URL + "/rest/v1/productos?id=eq." + dbId, {
+      method: "DELETE",
+      headers: sbHeaders({ "Prefer": "return=minimal" })
+    }).then(function(r){
+      if(!r.ok) return r.text().then(function(t){ throw new Error("No se pudo eliminar (" + r.status + "): " + t); });
+    });
+  }
+
   function linesToArray(text){
     return String(text||"").split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
   }
@@ -743,12 +821,6 @@
     var palette = ["1E5C9F","2E7D5B","9B4B9E","B3702A","4A5FBF","A03B57","1F8A8C","7A5C2E"];
     return palette[Math.floor(Math.random()*palette.length)];
   }
-  function nextId(){
-    var max = 0;
-    state.data.forEach(function(f){ if(f.id > max) max = f.id; });
-    return max + 1;
-  }
-
   function populateSectionSelect(){
     var sel = document.getElementById("f_seccion");
     var html = "";
@@ -770,6 +842,10 @@
     document.getElementById("photoPreview").innerHTML = "Sin foto";
     document.getElementById("formError").hidden = true;
     pendingPhoto = null;
+    pendingPhotoFile = null;
+    var submitBtn = document.querySelector("#addForm button[type=submit]");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Guardar producto";
     populateSectionSelect();
   }
 
@@ -784,6 +860,7 @@
 
   function handlePhotoFile(file){
     if(!file) return;
+    pendingPhotoFile = file;
     var reader = new FileReader();
     reader.onload = function(e){
       pendingPhoto = e.target.result;
@@ -824,11 +901,10 @@
       color = existing.color;
     }
 
-    var ficha = {
-      id: nextId(),
+    var row = {
       nombre: nombre,
       section: sectionName,
-      sectionNum: sectionNum,
+      section_num: sectionNum,
       color: color,
       codigos_sidico: csvToArray(document.getElementById("f_sidico").value),
       snomed_code: document.getElementById("f_snomedCode").value.trim() || null,
@@ -844,31 +920,50 @@
       generalidades: linesToArray(document.getElementById("f_generalidades").value),
       presentacion: linesToArray(document.getElementById("f_presentacion").value),
       almacenamiento: linesToArray(document.getElementById("f_almacenamiento").value),
-      imagen: pendingPhoto || null,
-      imagen_fuente: pendingPhoto ? "Foto cargada por el usuario." : "",
-      _custom: true
+      imagen_url: null,
+      imagen_fuente: ""
     };
 
-    state.data.push(ficha);
-    var custom = loadCustom();
-    custom.push(ficha);
-    saveCustom(custom);
+    var submitBtn = document.querySelector("#addForm button[type=submit]");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Guardando…";
 
-    state.sections = buildSections(state.data);
-    renderSections();
-    renderGrid();
-    closeAddForm();
-    openFicha(ficha.id, true);
+    var photoStep = pendingPhotoFile ? uploadFoto(pendingPhotoFile) : Promise.resolve(null);
+    photoStep.then(function(url){
+      if(url){
+        row.imagen_url = url;
+        row.imagen_fuente = "Foto cargada por el usuario.";
+      }
+      return insertProducto(row);
+    }).then(function(savedRow){
+      var ficha = dbRowToFicha(savedRow);
+      state.data.push(ficha);
+      state.sections = buildSections(state.data);
+      renderSections();
+      renderGrid();
+      closeAddForm();
+      openFicha(ficha.id, true);
+    }).catch(function(err){
+      console.error(err);
+      errorEl.textContent = "No se pudo guardar el producto. Revisá tu conexión e intentá de nuevo.";
+      errorEl.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Guardar producto";
+    });
   }
 
-  function deleteCustomFicha(id){
-    if(!confirm("¿Eliminar este producto agregado por vos? Esta acción no se puede deshacer.")) return;
-    state.data = state.data.filter(function(f){ return f.id !== id; });
-    saveCustom(loadCustom().filter(function(f){ return f.id !== id; }));
-    state.sections = buildSections(state.data);
-    renderSections();
-    renderGrid();
-    closeFicha(true);
+  function deleteCustomFicha(f){
+    if(!confirm("¿Eliminar este producto? Esta acción no se puede deshacer y afecta a todos los que ven esta guía.")) return;
+    deleteProducto(f._dbId).then(function(){
+      state.data = state.data.filter(function(x){ return x.id !== f.id; });
+      state.sections = buildSections(state.data);
+      renderSections();
+      renderGrid();
+      closeFicha(true);
+    }).catch(function(err){
+      console.error(err);
+      alert("No se pudo eliminar el producto. Revisá tu conexión e intentá de nuevo.");
+    });
   }
 
   function initTheme(){
@@ -945,9 +1040,9 @@
   }
 
   function start(hotData){
-    if(hotData && hotData.data){ boot({ data: hotData.data.concat(loadCustom()) }); return; }
-    fetch("data.json").then(function(r){ return r.json(); }).then(function(data){
-      boot({ data: data.concat(loadCustom()) });
+    var baseData = (hotData && hotData.data) ? Promise.resolve(hotData.data) : fetch("data.json").then(function(r){ return r.json(); });
+    Promise.all([baseData, fetchProductosFromDb()]).then(function(results){
+      boot({ data: results[0].concat(results[1]) });
     }).catch(function(err){
       document.getElementById("grid").innerHTML = '<p style="color:var(--ink-muted)">No se pudo cargar el listado de fichas.</p>';
       console.error(err);
