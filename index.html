@@ -1,0 +1,633 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Guía de Productos Médicos</title>
+<meta name="description" content="Guía provincial para el uso seguro de productos médicos — Ministerio de Salud, Gobierno de Mendoza">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #eef1f5;
+    --surface: #ffffff;
+    --surface-2: #f3f5f8;
+    --ink: #121821;
+    --ink-muted: #57626f;
+    --ink-faint: #8993a0;
+    --border: #dfe4ea;
+    --accent: #023f88;
+    --accent-ink: #ffffff;
+    --accent-soft: #e7eef8;
+    --accent-soft-ink: #023f88;
+    --focus: #1a63c4;
+    --shadow: 0 1px 2px rgba(20,30,45,.06), 0 8px 24px -12px rgba(20,30,45,.18);
+    --radius: 10px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #0d1219;
+      --surface: #151c26;
+      --surface-2: #1a222e;
+      --ink: #eef1f5;
+      --ink-muted: #a4afbd;
+      --ink-faint: #6b7684;
+      --border: #29323f;
+      --accent: #5b9cec;
+      --accent-ink: #071322;
+      --accent-soft: #1c2c40;
+      --accent-soft-ink: #a9cbf5;
+      --focus: #7ab0f5;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px -12px rgba(0,0,0,.55);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0d1219;
+    --surface: #151c26;
+    --surface-2: #1a222e;
+    --ink: #eef1f5;
+    --ink-muted: #a4afbd;
+    --ink-faint: #6b7684;
+    --border: #29323f;
+    --accent: #5b9cec;
+    --accent-ink: #071322;
+    --accent-soft: #1c2c40;
+    --accent-soft-ink: #a9cbf5;
+    --focus: #7ab0f5;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px -12px rgba(0,0,0,.55);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    padding-inline:0;
+  }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; }
+  .serif{ font-family:"Source Serif 4", Georgia, serif; }
+  h1,h2,h3{ text-wrap:balance; margin:0; }
+  a{ color:inherit; }
+  button{ font-family:inherit; }
+
+  /* ---------- App shell ---------- */
+  .app{
+    display:grid;
+    grid-template-columns: 280px 1fr;
+    min-height:100%;
+  }
+  @media (max-width: 860px){
+    .app{ grid-template-columns: 1fr; }
+  }
+
+  .topbar{
+    grid-column: 1 / -1;
+    position:sticky; top: env(safe-area-inset-top, 0px);
+    z-index:30;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding: 14px clamp(16px, 4vw, 32px);
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .brand{
+    display:flex; align-items:center; gap:11px; margin-right:auto; max-width:440px;
+  }
+  .brand .mark{
+    width:32px;height:32px;border-radius:8px;
+    background:var(--accent); color:var(--accent-ink);
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .brand h1{
+    font-family:"Source Serif 4"; font-weight:600; font-size:16.5px; line-height:1.22; letter-spacing:.1px;
+  }
+  .brand small{
+    display:block; color:var(--ink-muted); font-size:11px; letter-spacing:.03em;
+    text-transform:uppercase; margin-top:2px;
+  }
+
+  .search{
+    position:relative; flex:1 1 320px; max-width:520px;
+  }
+  .search input{
+    width:100%; padding:10px 14px 10px 38px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--ink);
+    font-size:14.5px;
+  }
+  .search input:focus{ outline:2px solid var(--focus); outline-offset:1px; }
+  .search svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.55; pointer-events:none; }
+  .search .count{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-size:12px; color:var(--ink-faint); font-family:"IBM Plex Mono";
+    pointer-events:none;
+  }
+
+  .theme-toggle, .nav-toggle{
+    border:1px solid var(--border); background:var(--surface-2); color:var(--ink-muted);
+    border-radius:8px; padding:8px 10px; cursor:pointer; display:flex; gap:6px; align-items:center;
+    font-size:13px;
+  }
+  .nav-toggle{ display:none; }
+  @media (max-width:860px){ .nav-toggle{ display:flex; } }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    border-right:1px solid var(--border);
+    background:var(--surface);
+    padding: 18px 14px 40px;
+    position:sticky; top: calc(63px + env(safe-area-inset-top, 0px));
+    align-self:start;
+    max-height: calc(100vh - 63px - env(safe-area-inset-top, 0px));
+    overflow:auto;
+  }
+  @media (max-width:860px){
+    .sidebar{
+      position:fixed; inset: calc(63px + env(safe-area-inset-top,0px)) 0 0 0;
+      max-height:none; height:calc(100% - 63px - env(safe-area-inset-top,0px));
+      transform:translateX(-100%); transition:transform .22s ease; z-index:25;
+      box-shadow:var(--shadow);
+    }
+    .sidebar.open{ transform:translateX(0); }
+  }
+  .sidebar-label{
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint);
+    padding: 6px 10px 8px;
+  }
+  .section-item{
+    display:flex; align-items:center; gap:10px;
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:8px 10px; border-radius:8px; color:var(--ink); font-size:13.5px;
+    line-height:1.3;
+  }
+  .section-item:hover{ background:var(--surface-2); }
+  .section-item.active{ background:var(--accent-soft); color:var(--accent-soft-ink); font-weight:600; }
+  .dot{ width:10px; height:10px; border-radius:3px; flex:none; }
+  .section-item .name{ flex:1; }
+  .section-item .n{ font-family:"IBM Plex Mono"; font-size:11.5px; color:var(--ink-faint); }
+  .section-item.active .n{ color:inherit; opacity:.7; }
+
+  /* ---------- Main / grid ---------- */
+  main{ padding: 22px clamp(16px, 4vw, 32px) 60px; min-width:0; }
+  .results-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    margin-bottom:16px; flex-wrap:wrap;
+  }
+  .results-head h2{ font-family:"Source Serif 4"; font-weight:600; font-size:21px; }
+  .results-head .sub{ color:var(--ink-muted); font-size:13px; }
+
+  .grid{
+    display:grid; gap:14px;
+    grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; text-align:left; cursor:pointer; display:flex; flex-direction:column;
+    box-shadow:none; transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+  }
+  .card:hover{ box-shadow:var(--shadow); border-color:transparent; transform:translateY(-1px); }
+  .card:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .card .thumb{
+    aspect-ratio: 4 / 3; width:100%; background:var(--surface-2);
+    display:flex; align-items:center; justify-content:center; position:relative;
+    border-bottom:1px solid var(--border);
+  }
+  .card .thumb img{ width:100%; height:100%; object-fit:contain; padding:10px; }
+  .card .thumb .ph{ color:var(--ink-faint); font-size:11.5px; text-align:center; padding:0 10px; letter-spacing:.03em; }
+  .card .thumb .ph svg{ display:block; margin:0 auto 6px; opacity:.55; }
+  .card .band{ position:absolute; left:0; top:0; height:4px; width:100%; }
+  .card .body{ padding:11px 12px 13px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .card .sec{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:600;
+    display:flex; align-items:center; gap:6px;
+  }
+  .card .name{ font-family:"Source Serif 4"; font-weight:600; font-size:15px; line-height:1.28; }
+  .card .meta{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:4px; }
+  .card .code{ font-family:"IBM Plex Mono"; font-size:11px; color:var(--ink-muted); }
+  .risk-pill{
+    font-size:10px; font-family:"IBM Plex Mono"; font-weight:600; padding:2px 6px; border-radius:5px;
+    border:1px solid var(--border); color:var(--ink-muted); flex:none;
+  }
+
+  .empty{
+    padding:60px 20px; text-align:center; color:var(--ink-muted);
+  }
+  .empty h3{ font-family:"Source Serif 4"; font-size:18px; color:var(--ink); margin-bottom:6px; }
+
+  /* ---------- Detail overlay ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:50; background:rgba(10,14,20,.5);
+    display:flex; justify-content:flex-end;
+  }
+  .overlay[hidden]{ display:none; }
+  .sheet{
+    width:min(720px, 100%); background:var(--bg); height:100%; overflow:auto;
+    box-shadow:-16px 0 40px -20px rgba(0,0,0,.4);
+    animation: slidein .18s ease;
+  }
+  @media (prefers-reduced-motion: reduce){ .sheet{ animation:none; } }
+  @keyframes slidein{ from{ transform:translateX(24px); opacity:.6 } to{ transform:none; opacity:1 } }
+
+  .sheet-head{
+    position:sticky; top:0; z-index:2;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding: 14px clamp(16px,4vw,28px); display:flex; align-items:center; gap:10px;
+  }
+  .sheet-head .sec-badge{
+    font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
+    padding:4px 9px; border-radius:999px;
+  }
+  .close-btn{
+    margin-left:auto; border:1px solid var(--border); background:var(--surface-2); color:var(--ink);
+    width:32px; height:32px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .close-btn:hover{ background:var(--accent-soft); }
+
+  .sheet-body{ padding: 22px clamp(16px,4vw,28px) 60px; display:flex; flex-direction:column; gap:22px; }
+  .ficha-top{ display:flex; gap:18px; flex-wrap:wrap; }
+  .ficha-img{
+    width:190px; flex:none; aspect-ratio:1; border-radius:var(--radius); border:1px solid var(--border);
+    background:var(--surface); display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .ficha-img img{ width:100%; height:100%; object-fit:contain; padding:10px; }
+  .ficha-img .ph{ color:var(--ink-faint); font-size:12px; text-align:center; padding:12px; }
+  .ficha-img .ph svg{ display:block; margin:0 auto 8px; opacity:.5; }
+  .ficha-title{ flex:1; min-width:220px; }
+  .ficha-title h2{ font-family:"Source Serif 4"; font-weight:600; font-size:24px; line-height:1.2; }
+  .ficha-title .sub{ color:var(--ink-muted); font-size:13.5px; margin-top:6px; }
+
+  .codebox{
+    border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--surface);
+  }
+  .codebox .row{ display:grid; grid-template-columns: 168px 1fr; border-top:1px solid var(--border); }
+  .codebox .row:first-child{ border-top:none; }
+  .codebox .row .k{ padding:9px 12px; font-size:11.5px; font-weight:600; color:var(--ink-muted); background:var(--surface-2); }
+  .codebox .row .v{ padding:9px 12px; font-size:13.5px; }
+  .codebox .row .v.code{ font-family:"IBM Plex Mono"; font-weight:600; }
+  .codebox .row .v.fsn{ font-style:italic; color:var(--ink-muted); }
+  .codebox .row .v.note{ font-style:italic; color:var(--ink-muted); font-size:12.5px; }
+  @media (max-width:520px){ .codebox .row{ grid-template-columns: 1fr; } .codebox .row .k{ padding-bottom:2px; } }
+
+  .risk-block{ display:flex; flex-direction:column; gap:8px; }
+  .risk-block .label{ font-size:13px; font-weight:600; }
+  .risk-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; max-width:340px; }
+  .risk-cell{
+    border:1px solid var(--border); border-radius:8px; text-align:center; padding:8px 4px;
+    font-family:"IBM Plex Mono"; font-size:12.5px; font-weight:600; color:var(--ink-muted); background:var(--surface);
+  }
+  .risk-cell.on{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .risk-note{ font-size:12px; color:var(--ink-muted); font-style:italic; }
+
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field h3{ font-size:13.5px; font-weight:700; padding-bottom:2px; border-bottom:2px solid; display:inline-block; }
+  .field ul{ margin:0; padding-left:19px; display:flex; flex-direction:column; gap:5px; }
+  .field li{ font-size:14px; line-height:1.5; }
+  .field .none{ color:var(--ink-faint); font-style:italic; font-size:13.5px; }
+
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+</style>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="brand">
+      <button class="nav-toggle" id="navToggle" aria-label="Mostrar secciones" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <span class="mark" aria-hidden="true" title="Escudo de Mendoza (pendiente de reemplazo por el archivo oficial)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2.5l7.5 2.7v6.1c0 5.1-3.2 8.9-7.5 10.2-4.3-1.3-7.5-5.1-7.5-10.2V5.2L12 2.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 7.2v9.4M8 12h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </span>
+      <div>
+        <h1>Guía Provincial para el Uso Seguro de Productos Médicos</h1>
+        <small>Ministerio de Salud · Gobierno de Mendoza</small>
+      </div>
+    </div>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input id="searchInput" type="search" placeholder="Buscar por nombre, código SIDICO o SNOMED CT…" autocomplete="off" aria-label="Buscar ficha">
+      <span class="count" id="searchCount" aria-hidden="true"></span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+      <svg id="themeIcon" width="15" height="15" viewBox="0 0 16 16" fill="none"></svg>
+      <span id="themeLabel">Tema</span>
+    </button>
+  </div>
+
+  <nav class="sidebar" id="sidebar" aria-label="Secciones">
+    <div class="sidebar-label">Secciones (<span id="sectionTotal">18</span>)</div>
+    <div id="sectionList"></div>
+  </nav>
+
+  <main>
+    <div class="results-head">
+      <h2 id="resultsTitle">Todas las fichas</h2>
+      <span class="sub" id="resultsSub"></span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="emptyState" hidden>
+      <h3>Sin resultados</h3>
+      <p>Probá con otro nombre, código SIDICO o código SNOMED CT.</p>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" id="sheet">
+    <div class="sheet-head">
+      <span class="sec-badge" id="sheetSecBadge"></span>
+      <button class="close-btn" id="closeBtn" aria-label="Cerrar ficha">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var state = { data: [], sections: [], query: "", activeSection: null, current: null };
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function tint(hex, amount){
+    amount = amount == null ? 0.85 : amount;
+    var r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+    var mix = function(c){ return Math.round(c + (255-c)*amount); };
+    return "#" + [mix(r),mix(g),mix(b)].map(function(v){ return v.toString(16).padStart(2,"0"); }).join("");
+  }
+  function shade(hex, amount){
+    amount = amount == null ? 0.12 : amount;
+    var r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+    var mix = function(c){ return Math.round(c*(1-amount)); };
+    return "#" + [mix(r),mix(g),mix(b)].map(function(v){ return v.toString(16).padStart(2,"0"); }).join("");
+  }
+
+  function placeholderSvg(){
+    return '<svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="8.5" cy="10" r="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M4 16l5-4 4 3 3-3 4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function buildSections(data){
+    var seen = {}, list = [];
+    data.forEach(function(f){
+      if(!seen[f.sectionNum]){
+        seen[f.sectionNum] = true;
+        list.push({ num: f.sectionNum, name: f.section, color: f.color, count: 0 });
+      }
+    });
+    list.sort(function(a,b){ return a.num - b.num; });
+    list.forEach(function(s){ s.count = data.filter(function(f){ return f.sectionNum === s.num; }).length; });
+    return list;
+  }
+
+  function renderSections(){
+    var el = document.getElementById("sectionList");
+    var html = "";
+    html += '<button class="section-item' + (state.activeSection===null?' active':'') + '" data-sec="">' +
+      '<span class="dot" style="background:var(--accent)"></span><span class="name">Todas</span><span class="n">' + state.data.length + '</span></button>';
+    state.sections.forEach(function(s){
+      html += '<button class="section-item' + (state.activeSection===s.num?' active':'') + '" data-sec="'+s.num+'">' +
+        '<span class="dot" style="background:#'+s.color+'"></span><span class="name">'+s.num+'. '+escapeHtml(s.name)+'</span><span class="n">'+s.count+'</span></button>';
+    });
+    el.innerHTML = html;
+    document.getElementById("sectionTotal").textContent = state.sections.length;
+    el.querySelectorAll(".section-item").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var v = btn.getAttribute("data-sec");
+        state.activeSection = v === "" ? null : parseInt(v,10);
+        renderSections();
+        renderGrid();
+        if(window.innerWidth <= 860){ closeSidebar(); }
+      });
+    });
+  }
+
+  function matches(f, q){
+    if(!q) return true;
+    q = q.toLowerCase();
+    var hay = [
+      f.nombre, f.section, f.snomed_code, f.snomed_fsn, f.snomed_es, f.snomed_nota,
+      (f.codigos_sidico||[]).join(" ")
+    ].join(" ").toLowerCase();
+    return hay.indexOf(q) !== -1;
+  }
+
+  function filtered(){
+    return state.data.filter(function(f){
+      if(state.activeSection !== null && f.sectionNum !== state.activeSection) return false;
+      return matches(f, state.query);
+    });
+  }
+
+  function cardHtml(f){
+    var imgHtml = f.imagen
+      ? '<img src="'+encodeURI(f.imagen)+'" alt="" loading="lazy">'
+      : '<div class="ph">'+placeholderSvg()+'FOTO<br>PENDIENTE</div>';
+    var risk = f.clase_riesgo ? escapeHtml(f.clase_riesgo).toUpperCase() : "—";
+    return '' +
+      '<button class="card" data-id="'+f.id+'">' +
+        '<div class="thumb"><span class="band" style="background:#'+f.color+'"></span>'+imgHtml+'</div>' +
+        '<div class="body">' +
+          '<div class="sec" style="color:#'+f.color+'">'+f.sectionNum+'. '+escapeHtml(f.section)+'</div>' +
+          '<div class="name">'+escapeHtml(f.nombre)+'</div>' +
+          '<div class="meta"><span class="code">SNOMED '+escapeHtml(f.snomed_code||"—")+'</span>' +
+            '<span class="risk-pill">'+risk+'</span></div>' +
+        '</div>' +
+      '</button>';
+  }
+
+  function renderGrid(){
+    var list = filtered();
+    var grid = document.getElementById("grid");
+    var empty = document.getElementById("emptyState");
+    document.getElementById("searchCount").textContent = state.query ? (list.length + (list.length===1?" res.":" res.")) : "";
+
+    var title = state.activeSection === null ? "Todas las fichas" :
+      state.sections.filter(function(s){return s.num===state.activeSection;})[0].num + ". " +
+      state.sections.filter(function(s){return s.num===state.activeSection;})[0].name;
+    document.getElementById("resultsTitle").textContent = title;
+    document.getElementById("resultsSub").textContent = list.length + " de " + state.data.length + " fichas";
+
+    if(list.length === 0){
+      grid.innerHTML = "";
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+    grid.innerHTML = list.map(cardHtml).join("");
+    grid.querySelectorAll(".card").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        openFicha(parseInt(btn.getAttribute("data-id"),10), true);
+      });
+    });
+  }
+
+  function listBlock(label, items, color){
+    var body = (items && items.length)
+      ? '<ul>' + items.map(function(i){ return '<li>'+escapeHtml(i)+'</li>'; }).join("") + '</ul>'
+      : '<p class="none">— (no especificado)</p>';
+    return '<div class="field"><h3 style="color:'+shade(color,0.05)+';border-color:#'+color+'">'+label+'</h3>'+body+'</div>';
+  }
+
+  function riskGridHtml(clase){
+    var order = ["I","II","III","IV"];
+    var found = null;
+    if(clase){
+      var up = clase.toUpperCase();
+      order.slice().reverse().forEach(function(c){ if(!found && up.indexOf(c) === 0) found = c; });
+    }
+    return '<div class="risk-grid">' + order.map(function(c){
+      return '<div class="risk-cell'+(c===found?' on':'')+'">Clase '+c+'</div>';
+    }).join("") + '</div>';
+  }
+
+  function openFicha(id, pushHash){
+    var f = state.data.filter(function(x){ return x.id === id; })[0];
+    if(!f) return;
+    state.current = f;
+    var overlay = document.getElementById("overlay");
+    var badge = document.getElementById("sheetSecBadge");
+    badge.textContent = f.sectionNum + ". " + f.section;
+    badge.style.background = "#" + tint(f.color, 0.85);
+    badge.style.color = "#" + shade(f.color, 0.05);
+
+    var imgHtml = f.imagen
+      ? '<img src="'+encodeURI(f.imagen)+'" alt="'+escapeHtml(f.nombre)+'">'
+      : '<div class="ph">'+placeholderSvg()+'FOTO PENDIENTE<br><span style="opacity:.8">(a incorporar por el HSI)</span></div>';
+
+    var codeRows = [
+      ["Código(s) SIDICO", (f.codigos_sidico||[]).join(" · ") || "—", ""],
+      ["Código SNOMED CT", escapeHtml(f.snomed_code||"—"), "code"],
+      ["Término SNOMED CT (ES)", escapeHtml(f.snomed_es||"—"), ""],
+      ["FSN (EN)", escapeHtml(f.snomed_fsn||"—"), "fsn"],
+    ];
+    var codeHtml = codeRows.map(function(r){
+      return '<div class="row"><div class="k">'+r[0]+'</div><div class="v '+r[2]+'">'+r[1]+'</div></div>';
+    }).join("");
+    if(f.snomed_nota){
+      codeHtml += '<div class="row"><div class="k">Nota SNOMED CT</div><div class="v note">'+escapeHtml(f.snomed_nota)+'</div></div>';
+    }
+
+    var html = '' +
+      '<div class="ficha-top">' +
+        '<div class="ficha-img">'+imgHtml+'</div>' +
+        '<div class="ficha-title">' +
+          '<h2 id="sheetTitle">'+escapeHtml(f.nombre)+'</h2>' +
+          '<div class="sub">'+(f.imagen_fuente ? escapeHtml(f.imagen_fuente) : "")+'</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="codebox">'+codeHtml+'</div>' +
+      '<div class="risk-block">' +
+        '<div class="label">Clasificación de Riesgo</div>' +
+        riskGridHtml(f.clase_riesgo) +
+        '<div class="risk-note">'+escapeHtml(f.clase_fuente||"")+'</div>' +
+      '</div>' +
+      listBlock("Descripción del Producto", f.descripcion, f.color) +
+      listBlock("Medidas", f.medidas, f.color) +
+      listBlock("Usos", f.usos, f.color) +
+      listBlock("Tipo de Material", f.tipo_material, f.color) +
+      listBlock("Generalidades", f.generalidades, f.color) +
+      (f.presentacion && f.presentacion.length ? listBlock("Presentación y envase", f.presentacion, f.color) : "") +
+      (f.almacenamiento && f.almacenamiento.length ? listBlock("Especificaciones de almacenamiento", f.almacenamiento, f.color) : "");
+
+    document.getElementById("sheetBody").innerHTML = html;
+    overlay.hidden = false;
+    document.getElementById("sheet").scrollTop = 0;
+    if(pushHash) history.pushState({ficha:id}, "", "#ficha-" + id);
+  }
+
+  function closeFicha(pushHash){
+    document.getElementById("overlay").hidden = true;
+    state.current = null;
+    if(pushHash && location.hash) history.pushState({}, "", location.pathname + location.search);
+  }
+
+  function closeSidebar(){
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("navToggle").setAttribute("aria-expanded","false");
+  }
+
+  function initTheme(){
+    var btn = document.getElementById("themeToggle");
+    var icon = document.getElementById("themeIcon");
+    var label = document.getElementById("themeLabel");
+    var sunPath = '<circle cx="8" cy="8" r="3.2" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5v1.3M8 13.2v1.3M14.5 8h-1.3M2.8 8H1.5M12.5 3.5l-.9.9M4.4 11.6l-.9.9M12.5 12.5l-.9-.9M4.4 4.4l-.9-.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>';
+    var moonPath = '<path d="M13.5 9.8A5.8 5.8 0 016.2 2.5a5.8 5.8 0 107.3 7.3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>';
+    var saved = null;
+    try{ saved = localStorage.getItem("fichas-theme"); }catch(e){}
+    function apply(mode){
+      if(mode === "light"){ document.documentElement.setAttribute("data-theme","light"); }
+      else if(mode === "dark"){ document.documentElement.setAttribute("data-theme","dark"); }
+      else { document.documentElement.removeAttribute("data-theme"); }
+      var isDark = mode ? mode==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      icon.innerHTML = isDark ? sunPath : moonPath;
+      label.textContent = isDark ? "Claro" : "Oscuro";
+    }
+    apply(saved);
+    btn.addEventListener("click", function(){
+      var current = document.documentElement.getAttribute("data-theme");
+      var isDark = current ? current==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var next = isDark ? "light" : "dark";
+      apply(next);
+      try{ localStorage.setItem("fichas-theme", next); }catch(e){}
+    });
+  }
+
+  function boot(initial){
+    state.data = initial.data;
+    state.sections = buildSections(state.data);
+    renderSections();
+    renderGrid();
+
+    document.getElementById("searchInput").addEventListener("input", function(e){
+      state.query = e.target.value.trim();
+      renderGrid();
+    });
+    document.getElementById("closeBtn").addEventListener("click", function(){ closeFicha(true); });
+    document.getElementById("overlay").addEventListener("click", function(e){
+      if(e.target.id === "overlay") closeFicha(true);
+    });
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && !document.getElementById("overlay").hidden) closeFicha(true);
+    });
+    document.getElementById("navToggle").addEventListener("click", function(){
+      var sb = document.getElementById("sidebar");
+      var open = sb.classList.toggle("open");
+      this.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    window.addEventListener("popstate", function(){
+      var m = location.hash.match(/^#ficha-(\d+)/);
+      if(m) openFicha(parseInt(m[1],10), false); else closeFicha(false);
+    });
+
+    initTheme();
+
+    var m = location.hash.match(/^#ficha-(\d+)/);
+    if(m) openFicha(parseInt(m[1],10), false);
+  }
+
+  function start(hotData){
+    if(hotData && hotData.data){ boot(hotData); return; }
+    fetch("data.json").then(function(r){ return r.json(); }).then(function(data){
+      boot({ data: data });
+    }).catch(function(err){
+      document.getElementById("grid").innerHTML = '<p style="color:var(--ink-muted)">No se pudo cargar el listado de fichas.</p>';
+      console.error(err);
+    });
+  }
+
+  if(window.claude && window.claude.hot && window.claude.hot.ready){
+    window.claude.hot.ready(start);
+  } else {
+    start(window.claude && window.claude.hot ? window.claude.hot.data : null);
+  }
+})();
+</script>
+
+</body></html>
