@@ -287,6 +287,59 @@
   .field .none{ color:var(--ink-faint); font-style:italic; font-size:13.5px; }
 
   .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+
+  /* ---------- Add product ---------- */
+  .add-btn{
+    border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+    border-radius:8px; padding:8px 13px; cursor:pointer; display:flex; gap:6px; align-items:center;
+    font-size:13px; font-weight:600;
+  }
+  .add-btn:hover{ opacity:.92; }
+
+  .form-body{ padding: 22px clamp(16px,4vw,28px) 60px; display:flex; flex-direction:column; gap:18px; }
+  .photo-field{ display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+  .photo-preview{
+    width:150px; height:150px; flex:none; border-radius:var(--radius); border:1px dashed var(--border);
+    background:var(--surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden;
+    color:var(--ink-faint); font-size:11.5px; text-align:center; padding:8px;
+  }
+  .photo-preview img{ width:100%; height:100%; object-fit:contain; }
+  .photo-actions{ display:flex; flex-direction:column; gap:8px; }
+  .photo-actions button{
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    border-radius:8px; padding:9px 14px; cursor:pointer; font-size:13.5px; display:flex; gap:8px; align-items:center;
+  }
+  .photo-actions button:hover{ background:var(--surface-2); }
+  .photo-actions .hint{ font-size:12px; color:var(--ink-muted); max-width:220px; }
+
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:560px){ .form-grid{ grid-template-columns:1fr; } }
+  .form-field{ display:flex; flex-direction:column; gap:5px; }
+  .form-field.full{ grid-column:1 / -1; }
+  .form-field label{ font-size:12.5px; font-weight:600; color:var(--ink-muted); }
+  .form-field .opt{ font-weight:400; font-style:italic; color:var(--ink-faint); }
+  .form-field input[type=text], .form-field input[type=search], .form-field select, .form-field textarea{
+    width:100%; border:1px solid var(--border); border-radius:8px; background:var(--surface);
+    color:var(--ink); padding:9px 11px; font-size:13.5px; font-family:inherit; resize:vertical;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus{
+    outline:2px solid var(--focus); outline-offset:1px;
+  }
+  .form-field textarea{ min-height:64px; }
+  .form-actions{ display:flex; gap:10px; justify-content:flex-end; padding-top:6px; }
+  .btn-primary{
+    border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+    border-radius:8px; padding:10px 18px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .btn-secondary{
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    border-radius:8px; padding:10px 16px; cursor:pointer; font-size:14px;
+  }
+  .btn-danger{
+    border:1px solid #b3413a; background:none; color:#b3413a;
+    border-radius:8px; padding:8px 12px; cursor:pointer; font-size:13px;
+  }
+  .form-error{ color:#b3413a; font-size:12.5px; }
 </style>
 
 <div class="app" id="app">
@@ -308,6 +361,10 @@
       <input id="searchInput" type="search" placeholder="Buscar por nombre, código SIDICO o SNOMED CT…" autocomplete="off" aria-label="Buscar ficha">
       <span class="count" id="searchCount" aria-hidden="true"></span>
     </div>
+    <button class="add-btn" id="addBtn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Agregar producto</span>
+    </button>
     <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
       <svg id="themeIcon" width="15" height="15" viewBox="0 0 16 16" fill="none"></svg>
       <span id="themeLabel">Tema</span>
@@ -341,6 +398,113 @@
       </button>
     </div>
     <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="addOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle" id="addSheet">
+    <div class="sheet-head">
+      <span id="addTitle" style="font-family:'Source Serif 4';font-weight:600;font-size:16px;">Agregar producto médico</span>
+      <button class="close-btn" id="addCloseBtn" aria-label="Cerrar formulario">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <form class="form-body" id="addForm">
+      <div class="photo-field">
+        <div class="photo-preview" id="photoPreview">Sin foto</div>
+        <div class="photo-actions">
+          <button type="button" id="takePhotoBtn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 5.5A1.5 1.5 0 013.5 4h1l.6-1.2A1 1 0 016 2.2h4a1 1 0 01.9.6L11.5 4h1A1.5 1.5 0 0114 5.5v6A1.5 1.5 0 0112.5 13h-9A1.5 1.5 0 012 11.5v-6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8.3" r="2.3" stroke="currentColor" stroke-width="1.3"/></svg>
+            <span>Sacar / elegir foto</span>
+          </button>
+          <input type="file" accept="image/*" capture="environment" id="photoInput" class="sr-only">
+          <span class="hint">Se guarda en este navegador junto con los datos del producto.</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field full">
+          <label for="f_nombre">Nombre del producto *</label>
+          <input type="text" id="f_nombre" required>
+        </div>
+
+        <div class="form-field">
+          <label for="f_seccion">Sección *</label>
+          <select id="f_seccion" required></select>
+        </div>
+        <div class="form-field" id="f_seccionNuevaWrap" hidden>
+          <label for="f_seccionNueva">Nombre de la nueva sección *</label>
+          <input type="text" id="f_seccionNueva">
+        </div>
+
+        <div class="form-field">
+          <label for="f_riesgo">Clase de riesgo</label>
+          <select id="f_riesgo">
+            <option value="">No especifica</option>
+            <option value="I">Clase I</option>
+            <option value="II">Clase II</option>
+            <option value="III">Clase III</option>
+            <option value="IV">Clase IV</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="f_sidico">Código(s) SIDICO <span class="opt">(separados por coma)</span></label>
+          <input type="text" id="f_sidico">
+        </div>
+
+        <div class="form-field">
+          <label for="f_snomedCode">Código SNOMED CT</label>
+          <input type="text" id="f_snomedCode">
+        </div>
+        <div class="form-field">
+          <label for="f_snomedEs">Término SNOMED CT (ES)</label>
+          <input type="text" id="f_snomedEs">
+        </div>
+        <div class="form-field">
+          <label for="f_snomedFsn">FSN (EN)</label>
+          <input type="text" id="f_snomedFsn">
+        </div>
+        <div class="form-field">
+          <label for="f_snomedNota">Nota SNOMED CT</label>
+          <input type="text" id="f_snomedNota">
+        </div>
+
+        <div class="form-field full">
+          <label for="f_descripcion">Descripción <span class="opt">(un ítem por línea)</span></label>
+          <textarea id="f_descripcion"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="f_medidas">Medidas <span class="opt">(una por línea)</span></label>
+          <textarea id="f_medidas"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="f_usos">Usos <span class="opt">(uno por línea)</span></label>
+          <textarea id="f_usos"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="f_material">Tipo de material <span class="opt">(uno por línea)</span></label>
+          <textarea id="f_material"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="f_generalidades">Generalidades <span class="opt">(una por línea)</span></label>
+          <textarea id="f_generalidades"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="f_presentacion">Presentación y envase <span class="opt">(una por línea)</span></label>
+          <textarea id="f_presentacion"></textarea>
+        </div>
+        <div class="form-field full">
+          <label for="f_almacenamiento">Especificaciones de almacenamiento <span class="opt">(una por línea)</span></label>
+          <textarea id="f_almacenamiento"></textarea>
+        </div>
+      </div>
+
+      <div class="form-error" id="formError" hidden></div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="cancelAddBtn">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar producto</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -534,9 +698,13 @@
       listBlock("Tipo de Material", f.tipo_material, f.color) +
       listBlock("Generalidades", f.generalidades, f.color) +
       (f.presentacion && f.presentacion.length ? listBlock("Presentación y envase", f.presentacion, f.color) : "") +
-      (f.almacenamiento && f.almacenamiento.length ? listBlock("Especificaciones de almacenamiento", f.almacenamiento, f.color) : "");
+      (f.almacenamiento && f.almacenamiento.length ? listBlock("Especificaciones de almacenamiento", f.almacenamiento, f.color) : "") +
+      (f._custom ? '<div><button type="button" class="btn-danger" id="deleteFichaBtn">Eliminar producto</button></div>' : "");
 
     document.getElementById("sheetBody").innerHTML = html;
+    if(f._custom){
+      document.getElementById("deleteFichaBtn").addEventListener("click", function(){ deleteCustomFicha(f.id); });
+    }
     overlay.hidden = false;
     document.getElementById("sheet").scrollTop = 0;
     if(pushHash) history.pushState({ficha:id}, "", "#ficha-" + id);
@@ -551,6 +719,156 @@
   function closeSidebar(){
     document.getElementById("sidebar").classList.remove("open");
     document.getElementById("navToggle").setAttribute("aria-expanded","false");
+  }
+
+  var CUSTOM_KEY = "fichas-custom-v1";
+  var pendingPhoto = null;
+
+  function loadCustom(){
+    try{
+      var raw = localStorage.getItem(CUSTOM_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveCustom(list){
+    try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function linesToArray(text){
+    return String(text||"").split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+  function csvToArray(text){
+    return String(text||"").split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+  function randomColor(){
+    var palette = ["1E5C9F","2E7D5B","9B4B9E","B3702A","4A5FBF","A03B57","1F8A8C","7A5C2E"];
+    return palette[Math.floor(Math.random()*palette.length)];
+  }
+  function nextId(){
+    var max = 0;
+    state.data.forEach(function(f){ if(f.id > max) max = f.id; });
+    return max + 1;
+  }
+
+  function populateSectionSelect(){
+    var sel = document.getElementById("f_seccion");
+    var html = "";
+    state.sections.forEach(function(s){
+      html += '<option value="'+s.num+'">'+s.num+'. '+escapeHtml(s.name)+'</option>';
+    });
+    html += '<option value="__new__">+ Nueva sección…</option>';
+    sel.innerHTML = html;
+    var wrap = document.getElementById("f_seccionNuevaWrap");
+    wrap.hidden = true;
+    sel.onchange = function(){
+      wrap.hidden = sel.value !== "__new__";
+    };
+  }
+
+  function resetAddForm(){
+    document.getElementById("addForm").reset();
+    document.getElementById("f_seccionNuevaWrap").hidden = true;
+    document.getElementById("photoPreview").innerHTML = "Sin foto";
+    document.getElementById("formError").hidden = true;
+    pendingPhoto = null;
+    populateSectionSelect();
+  }
+
+  function openAddForm(){
+    resetAddForm();
+    document.getElementById("addOverlay").hidden = false;
+    document.getElementById("f_nombre").focus();
+  }
+  function closeAddForm(){
+    document.getElementById("addOverlay").hidden = true;
+  }
+
+  function handlePhotoFile(file){
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      pendingPhoto = e.target.result;
+      document.getElementById("photoPreview").innerHTML = '<img src="'+e.target.result+'" alt="">';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function submitAddForm(e){
+    e.preventDefault();
+    var errorEl = document.getElementById("formError");
+    errorEl.hidden = true;
+
+    var nombre = document.getElementById("f_nombre").value.trim();
+    var secSel = document.getElementById("f_seccion").value;
+    var secNueva = document.getElementById("f_seccionNueva").value.trim();
+
+    if(!nombre){
+      errorEl.textContent = "Ingresá el nombre del producto.";
+      errorEl.hidden = false;
+      return;
+    }
+    if(secSel === "__new__" && !secNueva){
+      errorEl.textContent = "Ingresá el nombre de la nueva sección.";
+      errorEl.hidden = false;
+      return;
+    }
+
+    var sectionNum, sectionName, color;
+    if(secSel === "__new__"){
+      sectionNum = (function(){ var m=0; state.sections.forEach(function(s){ if(s.num>m) m=s.num; }); return m+1; })();
+      sectionName = secNueva;
+      color = randomColor();
+    } else {
+      var existing = state.sections.filter(function(s){ return s.num === parseInt(secSel,10); })[0];
+      sectionNum = existing.num;
+      sectionName = existing.name;
+      color = existing.color;
+    }
+
+    var ficha = {
+      id: nextId(),
+      nombre: nombre,
+      section: sectionName,
+      sectionNum: sectionNum,
+      color: color,
+      codigos_sidico: csvToArray(document.getElementById("f_sidico").value),
+      snomed_code: document.getElementById("f_snomedCode").value.trim() || null,
+      snomed_fsn: document.getElementById("f_snomedFsn").value.trim() || null,
+      snomed_es: document.getElementById("f_snomedEs").value.trim() || null,
+      snomed_nota: document.getElementById("f_snomedNota").value.trim() || null,
+      clase_riesgo: document.getElementById("f_riesgo").value || null,
+      clase_fuente: "",
+      descripcion: linesToArray(document.getElementById("f_descripcion").value),
+      medidas: linesToArray(document.getElementById("f_medidas").value),
+      usos: linesToArray(document.getElementById("f_usos").value),
+      tipo_material: linesToArray(document.getElementById("f_material").value),
+      generalidades: linesToArray(document.getElementById("f_generalidades").value),
+      presentacion: linesToArray(document.getElementById("f_presentacion").value),
+      almacenamiento: linesToArray(document.getElementById("f_almacenamiento").value),
+      imagen: pendingPhoto || null,
+      imagen_fuente: pendingPhoto ? "Foto cargada por el usuario." : "",
+      _custom: true
+    };
+
+    state.data.push(ficha);
+    var custom = loadCustom();
+    custom.push(ficha);
+    saveCustom(custom);
+
+    state.sections = buildSections(state.data);
+    renderSections();
+    renderGrid();
+    closeAddForm();
+    openFicha(ficha.id, true);
+  }
+
+  function deleteCustomFicha(id){
+    if(!confirm("¿Eliminar este producto agregado por vos? Esta acción no se puede deshacer.")) return;
+    state.data = state.data.filter(function(f){ return f.id !== id; });
+    saveCustom(loadCustom().filter(function(f){ return f.id !== id; }));
+    state.sections = buildSections(state.data);
+    renderSections();
+    renderGrid();
+    closeFicha(true);
   }
 
   function initTheme(){
@@ -606,6 +924,20 @@
       if(m) openFicha(parseInt(m[1],10), false); else closeFicha(false);
     });
 
+    document.getElementById("addBtn").addEventListener("click", openAddForm);
+    document.getElementById("addCloseBtn").addEventListener("click", closeAddForm);
+    document.getElementById("cancelAddBtn").addEventListener("click", closeAddForm);
+    document.getElementById("addOverlay").addEventListener("click", function(e){
+      if(e.target.id === "addOverlay") closeAddForm();
+    });
+    document.getElementById("addForm").addEventListener("submit", submitAddForm);
+    document.getElementById("takePhotoBtn").addEventListener("click", function(){
+      document.getElementById("photoInput").click();
+    });
+    document.getElementById("photoInput").addEventListener("change", function(e){
+      handlePhotoFile(e.target.files && e.target.files[0]);
+    });
+
     initTheme();
 
     var m = location.hash.match(/^#ficha-(\d+)/);
@@ -613,9 +945,9 @@
   }
 
   function start(hotData){
-    if(hotData && hotData.data){ boot(hotData); return; }
+    if(hotData && hotData.data){ boot({ data: hotData.data.concat(loadCustom()) }); return; }
     fetch("data.json").then(function(r){ return r.json(); }).then(function(data){
-      boot({ data: data });
+      boot({ data: data.concat(loadCustom()) });
     }).catch(function(err){
       document.getElementById("grid").innerHTML = '<p style="color:var(--ink-muted)">No se pudo cargar el listado de fichas.</p>';
       console.error(err);
