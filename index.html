@@ -340,6 +340,7 @@
     border-radius:8px; padding:8px 12px; cursor:pointer; font-size:13px;
   }
   .form-error{ color:#b3413a; font-size:12.5px; }
+  .sheet-actions{ display:flex; gap:10px; flex-wrap:wrap; }
 </style>
 
 <div class="app" id="app">
@@ -699,9 +700,13 @@
       listBlock("Generalidades", f.generalidades, f.color) +
       (f.presentacion && f.presentacion.length ? listBlock("Presentación y envase", f.presentacion, f.color) : "") +
       (f.almacenamiento && f.almacenamiento.length ? listBlock("Especificaciones de almacenamiento", f.almacenamiento, f.color) : "") +
-      (f._custom ? '<div><button type="button" class="btn-danger" id="deleteFichaBtn">Eliminar producto</button></div>' : "");
+      '<div class="sheet-actions">' +
+        '<button type="button" class="btn-secondary" id="editFichaBtn">Editar producto</button>' +
+        (f._custom ? '<button type="button" class="btn-danger" id="deleteFichaBtn">Eliminar producto</button>' : "") +
+      '</div>';
 
     document.getElementById("sheetBody").innerHTML = html;
+    document.getElementById("editFichaBtn").addEventListener("click", function(){ openEditForm(f); });
     if(f._custom){
       document.getElementById("deleteFichaBtn").addEventListener("click", function(){ deleteCustomFicha(f); });
     }
@@ -811,6 +816,70 @@
     });
   }
 
+  function updateProducto(dbId, row){
+    return fetch(SUPABASE_URL + "/rest/v1/productos?id=eq." + dbId, {
+      method: "PATCH",
+      headers: sbHeaders({ "Content-Type": "application/json", "Prefer": "return=representation" }),
+      body: JSON.stringify(row)
+    }).then(function(r){
+      if(!r.ok) return r.text().then(function(t){ throw new Error("No se pudo guardar los cambios (" + r.status + "): " + t); });
+      return r.json();
+    }).then(function(rows){ return rows[0]; });
+  }
+
+  function upsertOverride(fichaId, row){
+    row = Object.assign({ ficha_id: fichaId }, row);
+    return fetch(SUPABASE_URL + "/rest/v1/producto_overrides?on_conflict=ficha_id", {
+      method: "POST",
+      headers: sbHeaders({ "Content-Type": "application/json", "Prefer": "resolution=merge-duplicates,return=representation" }),
+      body: JSON.stringify([row])
+    }).then(function(r){
+      if(!r.ok) return r.text().then(function(t){ throw new Error("No se pudo guardar los cambios (" + r.status + "): " + t); });
+      return r.json();
+    }).then(function(rows){ return rows[0]; });
+  }
+
+  function dbOverrideRowToFields(row){
+    return {
+      nombre: row.nombre,
+      section: row.section,
+      sectionNum: row.section_num,
+      color: row.color,
+      codigos_sidico: row.codigos_sidico || [],
+      snomed_code: row.snomed_code,
+      snomed_fsn: row.snomed_fsn,
+      snomed_es: row.snomed_es,
+      snomed_nota: row.snomed_nota,
+      clase_riesgo: row.clase_riesgo,
+      clase_fuente: row.clase_fuente,
+      descripcion: row.descripcion || [],
+      medidas: row.medidas || [],
+      usos: row.usos || [],
+      tipo_material: row.tipo_material || [],
+      generalidades: row.generalidades || [],
+      presentacion: row.presentacion || [],
+      almacenamiento: row.almacenamiento || [],
+      imagen: row.imagen_url || null,
+      imagen_fuente: row.imagen_fuente || ""
+    };
+  }
+
+  function fetchOverridesFromDb(){
+    return fetch(SUPABASE_URL + "/rest/v1/producto_overrides?select=*", {
+      headers: sbHeaders()
+    }).then(function(r){
+      if(!r.ok) throw new Error("Supabase respondió " + r.status);
+      return r.json();
+    }).then(function(rows){
+      var map = {};
+      rows.forEach(function(row){ map[row.ficha_id] = dbOverrideRowToFields(row); });
+      return map;
+    }).catch(function(err){
+      console.error("No se pudieron cargar las ediciones compartidas:", err);
+      return {};
+    });
+  }
+
   function linesToArray(text){
     return String(text||"").split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
   }
@@ -836,6 +905,11 @@
     };
   }
 
+  var editingFicha = null;
+
+  function arrToLines(arr){ return (arr||[]).join("\n"); }
+  function arrToCsv(arr){ return (arr||[]).join(", "); }
+
   function resetAddForm(){
     document.getElementById("addForm").reset();
     document.getElementById("f_seccionNuevaWrap").hidden = true;
@@ -846,11 +920,43 @@
     var submitBtn = document.querySelector("#addForm button[type=submit]");
     submitBtn.disabled = false;
     submitBtn.textContent = "Guardar producto";
+    document.getElementById("addTitle").textContent = "Agregar producto médico";
     populateSectionSelect();
   }
 
+  function fillAddForm(f){
+    document.getElementById("f_nombre").value = f.nombre || "";
+    document.getElementById("f_seccion").value = f.sectionNum;
+    document.getElementById("f_riesgo").value = f.clase_riesgo || "";
+    document.getElementById("f_sidico").value = arrToCsv(f.codigos_sidico);
+    document.getElementById("f_snomedCode").value = f.snomed_code || "";
+    document.getElementById("f_snomedEs").value = f.snomed_es || "";
+    document.getElementById("f_snomedFsn").value = f.snomed_fsn || "";
+    document.getElementById("f_snomedNota").value = f.snomed_nota || "";
+    document.getElementById("f_descripcion").value = arrToLines(f.descripcion);
+    document.getElementById("f_medidas").value = arrToLines(f.medidas);
+    document.getElementById("f_usos").value = arrToLines(f.usos);
+    document.getElementById("f_material").value = arrToLines(f.tipo_material);
+    document.getElementById("f_generalidades").value = arrToLines(f.generalidades);
+    document.getElementById("f_presentacion").value = arrToLines(f.presentacion);
+    document.getElementById("f_almacenamiento").value = arrToLines(f.almacenamiento);
+    if(f.imagen){
+      document.getElementById("photoPreview").innerHTML = '<img src="'+encodeURI(f.imagen)+'" alt="">';
+    }
+  }
+
   function openAddForm(){
+    editingFicha = null;
     resetAddForm();
+    document.getElementById("addOverlay").hidden = false;
+    document.getElementById("f_nombre").focus();
+  }
+  function openEditForm(f){
+    editingFicha = f;
+    resetAddForm();
+    document.getElementById("addTitle").textContent = "Editar producto médico";
+    document.querySelector("#addForm button[type=submit]").textContent = "Guardar cambios";
+    fillAddForm(f);
     document.getElementById("addOverlay").hidden = false;
     document.getElementById("f_nombre").focus();
   }
@@ -920,11 +1026,12 @@
       generalidades: linesToArray(document.getElementById("f_generalidades").value),
       presentacion: linesToArray(document.getElementById("f_presentacion").value),
       almacenamiento: linesToArray(document.getElementById("f_almacenamiento").value),
-      imagen_url: null,
-      imagen_fuente: ""
+      imagen_url: editingFicha ? (editingFicha.imagen || null) : null,
+      imagen_fuente: editingFicha ? (editingFicha.imagen_fuente || "") : ""
     };
 
     var submitBtn = document.querySelector("#addForm button[type=submit]");
+    var idleLabel = editingFicha ? "Guardar cambios" : "Guardar producto";
     submitBtn.disabled = true;
     submitBtn.textContent = "Guardando…";
 
@@ -934,10 +1041,21 @@
         row.imagen_url = url;
         row.imagen_fuente = "Foto cargada por el usuario.";
       }
-      return insertProducto(row);
-    }).then(function(savedRow){
-      var ficha = dbRowToFicha(savedRow);
-      state.data.push(ficha);
+      if(!editingFicha){
+        return insertProducto(row).then(function(savedRow){ return { ficha: dbRowToFicha(savedRow) }; });
+      }
+      if(editingFicha._custom){
+        return updateProducto(editingFicha._dbId, row).then(function(savedRow){
+          return { ficha: Object.assign({}, dbRowToFicha(savedRow)) };
+        });
+      }
+      return upsertOverride(editingFicha.id, row).then(function(savedRow){
+        return { ficha: Object.assign({}, editingFicha, dbOverrideRowToFields(savedRow), { _edited: true }) };
+      });
+    }).then(function(result){
+      var ficha = result.ficha;
+      var idx = state.data.findIndex(function(x){ return x.id === ficha.id; });
+      if(idx === -1){ state.data.push(ficha); } else { state.data[idx] = ficha; }
       state.sections = buildSections(state.data);
       renderSections();
       renderGrid();
@@ -945,10 +1063,10 @@
       openFicha(ficha.id, true);
     }).catch(function(err){
       console.error(err);
-      errorEl.textContent = "No se pudo guardar el producto. Revisá tu conexión e intentá de nuevo.";
+      errorEl.textContent = "No se pudo guardar. Revisá tu conexión e intentá de nuevo.";
       errorEl.hidden = false;
       submitBtn.disabled = false;
-      submitBtn.textContent = "Guardar producto";
+      submitBtn.textContent = idleLabel;
     });
   }
 
@@ -1041,8 +1159,13 @@
 
   function start(hotData){
     var baseData = (hotData && hotData.data) ? Promise.resolve(hotData.data) : fetch("data.json").then(function(r){ return r.json(); });
-    Promise.all([baseData, fetchProductosFromDb()]).then(function(results){
-      boot({ data: results[0].concat(results[1]) });
+    Promise.all([baseData, fetchProductosFromDb(), fetchOverridesFromDb()]).then(function(results){
+      var base = results[0], custom = results[1], overrides = results[2];
+      var merged = base.map(function(f){
+        var ov = overrides[f.id];
+        return ov ? Object.assign({}, f, ov, { _edited: true }) : f;
+      });
+      boot({ data: merged.concat(custom) });
     }).catch(function(err){
       document.getElementById("grid").innerHTML = '<p style="color:var(--ink-muted)">No se pudo cargar el listado de fichas.</p>';
       console.error(err);
